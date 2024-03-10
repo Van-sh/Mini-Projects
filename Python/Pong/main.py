@@ -1,4 +1,5 @@
 # Please don't roast my code ;-;
+import os
 import sys
 
 import pygame
@@ -14,8 +15,9 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 
 # Initialising Font
-PIXELADE_FONT_50 = pygame.font.Font("./Fonts/PIXELADE.ttf", 50)
-PIXELADE_FONT_100 = pygame.font.Font("./Fonts/PIXELADE.ttf", 100)
+current = os.path.dirname(os.path.realpath(__file__))
+PIXELADE_FONT_50 = pygame.font.Font(f"{current}/Fonts/PIXELADE.ttf", 50)
+PIXELADE_FONT_100 = pygame.font.Font(f"{current}/Fonts/PIXELADE.ttf", 100)
 
 # Initialising size of the window.
 SIZE = WIDTH, HEIGHT = 600, 450

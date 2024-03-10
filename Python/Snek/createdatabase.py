@@ -3,10 +3,11 @@ import sqlite3
 
 
 def main() -> None:
-    if not os.path.exists("./Database"):
-        os.makedirs("./Database")
+    current = os.path.dirname(os.path.realpath(__file__))
+    if not os.path.exists(f"{current}/Database"):
+        os.makedirs(f"{current}/Database")
         print("Directory successfully made")
-    cnx = sqlite3.connect("./Database/snekscores.db")
+    cnx = sqlite3.connect(f"{current}/Database/snekscores.db")
     csr = cnx.cursor()
     csr.execute("SELECT name FROM sqlite_master WHERE type = 'table';")
     data = csr.fetchall()

@@ -1,4 +1,5 @@
 # Please don't roast my code ;-;
+import os
 import random
 import sqlite3
 import tkinter as tk
@@ -9,6 +10,8 @@ from tkinter import ttk
 from PIL import Image, ImageTk
 
 import createdatabase
+
+current = os.path.dirname(os.path.realpath(__file__))
 
 # creating the database and table if not present.
 createdatabase.main()
@@ -89,7 +92,7 @@ class Snek(tk.Toplevel):
         # Initialising TopLevel.
         self.resizable(0, 0)
         self.title(f"Snek - {username}")
-        self.iconbitmap("./Assets/snek.ico")
+        self.iconbitmap(f"{current}/Assets/snek.ico")
 
         # Configuring style for widgets.
         self.__style = ttk.Style(self)
@@ -101,10 +104,10 @@ class Snek(tk.Toplevel):
             "Won.Text.TLabel", font=("Arial", 15, "bold"), foreground="#00ff00"
         )
 
-        self._head = Image.open("./Assets/Modules/snek_head.png")
-        self._body = Image.open("./Assets/Modules/snek_body.png")
-        self._fud = Image.open("./Assets/Modules/apple.png")
-        self._grass = Image.open("./Assets/Modules/back_drop.png")
+        self._head = Image.open(f"{current}/Assets/Modules/snek_head.png")
+        self._body = Image.open(f"{current}/Assets/Modules/snek_body.png")
+        self._fud = Image.open(f"{current}/Assets/Modules/apple.png")
+        self._grass = Image.open(f"{current}/Assets/Modules/back_drop.png")
         self.ASSET_WIDTH = self._head.width
         self.ASSET_HEIGHT = self._head.height
         self.sizex = sizex
@@ -141,7 +144,7 @@ class Snek(tk.Toplevel):
         self.score = 0
 
         # Starting a SQL connection.
-        self.cnx = sqlite3.connect("./Database/snekscores.db")
+        self.cnx = sqlite3.connect(f"{current}/Database/snekscores.db")
         self.csr = self.cnx.cursor()
         self.csr.execute("SELECT * FROM snekscores WHERE Username = ?;", (username,))
         self.data = self.csr.fetchall()
@@ -382,7 +385,7 @@ def main() -> None:
         # Initialising TopLevel.
         username_screen = tk.Toplevel(root, background="black")
         username_screen.title("Snek - Play")
-        username_screen.iconbitmap("./Assets/snek.ico")
+        username_screen.iconbitmap(f"{current}/Assets/snek.ico")
 
         # Setting up TopLevel.
         username_label = ttk.Label(
@@ -412,7 +415,7 @@ def main() -> None:
         # Initialising TopLevel.
         leaderboard_screen = tk.Toplevel(root, background="black")
         leaderboard_screen.title("Snek - Leaderboard")
-        leaderboard_screen.iconbitmap("./Assets/snek.ico")
+        leaderboard_screen.iconbitmap(f"{current}/Assets/snek.ico")
 
         # Setting up TopLevel.
         leaderboard_heading_label = ttk.Label(
@@ -452,7 +455,7 @@ def main() -> None:
         # Initialising TopLevel.
         rules_screen = tk.Toplevel(root, background="black")
         rules_screen.title("Snek - Rules")
-        rules_screen.iconbitmap("./Assets/snek.ico")
+        rules_screen.iconbitmap(f"{current}/Assets/snek.ico")
 
         # Setting up TopLevel.
         controls_heading_label = ttk.Label(
@@ -492,10 +495,10 @@ def main() -> None:
     root.resizable(0, 0)
 
     # Loading and setting up the snek icon.
-    logo = Image.open("./Assets/snek.png")
+    logo = Image.open(f"{current}/Assets/snek.png")
     logo.thumbnail((x // 4 for x in logo.size))
     logo = ImageTk.PhotoImage(logo)
-    root.iconbitmap("./Assets/snek.ico")
+    root.iconbitmap(f"{current}/Assets/snek.ico")
 
     # Configuring style for widgets.
     style = ttk.Style(root)
@@ -530,7 +533,7 @@ def main() -> None:
 if __name__ == "__main__":
     # Initialising a global variable to keep track of the last username, empty string on startup
     last_user = ""
-    cnx = sqlite3.connect("./Database/snekscores.db")
+    cnx = sqlite3.connect(f"{current}/Database/snekscores.db")
     csr = cnx.cursor()
     main()
     cnx.close()
