@@ -20,7 +20,7 @@ class Hangman:
     def __repr__(self) -> str:
         repr = self.text_art[self.__wrong_guesses]
         if self.__wrong_guesses < 6:
-            repr += f"""\n\nWord -> {self.print_word()}
+            repr += f"""\n\nWord -> {self.get_word_print()}
 Guessed Letters -> {', '.join(sorted(self.__guesses))}"""
         return repr
 
@@ -35,7 +35,7 @@ Guessed Letters -> {', '.join(sorted(self.__guesses))}"""
             words = f.read().split()
             self.word = choice(words)
 
-    def print_word(self) -> str:
+    def get_word_print(self) -> str:
         return "".join(
             letter if letter in self.__guesses else "_" for letter in self.word
         )
@@ -46,7 +46,7 @@ Guessed Letters -> {', '.join(sorted(self.__guesses))}"""
             print(self)
             if self.__wrong_guesses == 6:
                 return (False, self.word)
-            elif "_" not in self.print_word():
+            elif "_" not in self.get_word_print():
                 return (True, self.word)
             while True:
                 guess = input("Guess a Letter: ")
