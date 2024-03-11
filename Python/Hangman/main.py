@@ -1,6 +1,7 @@
 from random import choice
 import os
 
+
 class Hangman:
     def __init__(self) -> None:
         self.new_word()
@@ -23,6 +24,12 @@ class Hangman:
 Guessed Letters -> {', '.join(sorted(self.__guesses))}"""
         return repr
 
+    def __clear(self) -> None:
+        if os.name == "nt":
+            os.system("cls")
+        else:
+            os.system("clear")
+
     def new_word(self) -> None:
         with open(f"{os.path.dirname(os.path.realpath(__file__))}/words.txt", "r") as f:
             words = f.read().split()
@@ -34,6 +41,7 @@ Guessed Letters -> {', '.join(sorted(self.__guesses))}"""
         )
 
     def main(self) -> tuple[bool, str]:
+        self.__clear()
         while True:
             print(self)
             if self.__wrong_guesses == 6:
@@ -59,19 +67,23 @@ if __name__ == "__main__":
     hangman = Hangman()
     result = hangman.main()
     if result[0]:
-        print("""
+        print(
+            """
 ██╗░░░██╗░█████╗░██╗░░░██╗  ░██╗░░░░░░░██╗██╗███╗░░██╗
 ╚██╗░██╔╝██╔══██╗██║░░░██║  ░██║░░██╗░░██║██║████╗░██║
 ░╚████╔╝░██║░░██║██║░░░██║  ░╚██╗████╗██╔╝██║██╔██╗██║
 ░░╚██╔╝░░██║░░██║██║░░░██║  ░░████╔═████║░██║██║╚████║
 ░░░██║░░░╚█████╔╝╚██████╔╝  ░░╚██╔╝░╚██╔╝░██║██║░╚███║
-░░░╚═╝░░░░╚════╝░░╚═════╝░  ░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝""")
+░░░╚═╝░░░░╚════╝░░╚═════╝░  ░░░╚═╝░░░╚═╝░░╚═╝╚═╝░░╚══╝"""
+        )
     else:
-        print("""
+        print(
+            """
 ██╗░░░██╗░█████╗░██╗░░░██╗  ██╗░░░░░░█████╗░░██████╗███████╗
 ╚██╗░██╔╝██╔══██╗██║░░░██║  ██║░░░░░██╔══██╗██╔════╝██╔════╝
 ░╚████╔╝░██║░░██║██║░░░██║  ██║░░░░░██║░░██║╚█████╗░█████╗░░
 ░░╚██╔╝░░██║░░██║██║░░░██║  ██║░░░░░██║░░██║░╚═══██╗██╔══╝░░
 ░░░██║░░░╚█████╔╝╚██████╔╝  ███████╗╚█████╔╝██████╔╝███████╗
-░░░╚═╝░░░░╚════╝░░╚═════╝░  ╚══════╝░╚════╝░╚═════╝░╚══════╝""")
+░░░╚═╝░░░░╚════╝░░╚═════╝░  ╚══════╝░╚════╝░╚═════╝░╚══════╝"""
+        )
     print(f"The word was {result[1]}")
