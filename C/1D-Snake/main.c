@@ -150,7 +150,7 @@ int update_grid(int grid[], struct SnakeHead *head, int nextMove)
     default:
         return 1;
     }
-    if (head->x < 0 || head->x > WIDTH || head->y < 0 || head->y > HEIGHT)
+    if (head->x < 0 || head->x >= WIDTH || head->y < 0 || head->y >= HEIGHT)
     {
         return 2;
     }
