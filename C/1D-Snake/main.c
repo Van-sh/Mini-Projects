@@ -124,7 +124,10 @@ int check_move(char nextMove, char lastMove)
     {
         return 2;
     }
-    if ((nMove == CHECK_W && lMove == CHECK_S) || (nMove == CHECK_S && lMove == CHECK_W) || (nMove == CHECK_A && lMove == CHECK_D) || (nMove == CHECK_D && lMove == CHECK_A))
+    if ((nMove == CHECK_W && lMove == CHECK_S) ||
+        (nMove == CHECK_S && lMove == CHECK_W) ||
+        (nMove == CHECK_A && lMove == CHECK_D) ||
+        (nMove == CHECK_D && lMove == CHECK_A))
     {
         return 3;
     }
