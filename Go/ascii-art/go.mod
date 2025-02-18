@@ -1,4 +1,4 @@
-module github.com/Van-sh/Mini-Projects/Go/ascii-art
+module Van-sh/ascii-art
 
 go 1.24
 

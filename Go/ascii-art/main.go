@@ -11,7 +11,7 @@ import (
 	"github.com/anthonynsimon/bild/transform"
 	"golang.org/x/term"
 
-	"github.com/Van-sh/Mini-Projects/Go/ascii-art/filters"
+	"Van-sh/ascii-art/filters"
 )
 
 const (
