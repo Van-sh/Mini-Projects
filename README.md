@@ -23,3 +23,9 @@ A repo to hold my mini projects.
 1. [1D-Snake](./C/1D-Snake/)
 
     Don't let the name fool you, you still play this in 2D, the reason it's called 1D-Snake is because the grid is stored in a 1D Array.
+
+## Go Projects
+
+1. [ASCII Art Generator](./Go/ascii-art/)
+
+    A simple program to generate ASCII art using some edge detection to try to highlight the edges
