@@ -94,7 +94,8 @@ func generate(inputPath string) error {
 				}
 			} else {
 				r, g, b, a := img.At(x, y).RGBA()
-				greyScale := ((r + g + b) / 3) * a / 0xffff
+				var tmp uint64 = uint64(r*r) + uint64(g*g) + uint64(b*b)
+				greyScale := uint32(tmp/3/0xffff) * a / 0xffff
 				strIndex := uint32(float64(greyScale) * float64(asciiCharLength) / float64(0xffff))
 
 				pixelString += fmt.Sprintf("%c", asciiChars[strIndex])
