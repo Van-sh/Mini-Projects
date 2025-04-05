@@ -54,6 +54,8 @@ class Head(BodyNode):
             return (self.x + 1, self.y)
         elif self.direction == "W":
             return (self.x - 1, self.y)
+        else:
+            return (self.x, self.y)
 
 
 class Fud:
@@ -90,7 +92,7 @@ class Snek(tk.Toplevel):
     ) -> None:
         super().__init__(root, background="black")
         # Initialising TopLevel.
-        self.resizable(0, 0)
+        self.resizable(False, False)
         self.title(f"Snek - {username}")
         self.iconbitmap(f"{current}/Assets/snek.ico")
 
@@ -166,7 +168,6 @@ class Snek(tk.Toplevel):
         # Display the game grid.
         grid = ImageTk.PhotoImage(self.repr())
         self.game_label = ttk.Label(self, image=grid)
-        self.game_label.image = grid
         self.game_close_button = ttk.Button(
             self, text="Close", width=35, command=self.destroy
         )
@@ -196,7 +197,7 @@ class Snek(tk.Toplevel):
                 elif (x, y) in fudcoords:
                     represent += str(fudcoords[(x, y)])
                 else:
-                    represent += self._grass
+                    represent += "##"
             represent += "\n"
         return represent
 
@@ -230,6 +231,14 @@ class Snek(tk.Toplevel):
         key = event.keysym.upper()
         if key in ("W", "A", "S", "D"):
             self.add_move(self.__controls_to_directions[key])
+        elif key == "UP":
+            self.add_move(self.__controls_to_directions["W"])
+        elif key == "LEFT":
+            self.add_move(self.__controls_to_directions["A"])
+        elif key == "DOWN":
+            self.add_move(self.__controls_to_directions["S"])
+        elif key == "RIGHT":
+            self.add_move(self.__controls_to_directions["D"])
 
     def get_body_coords(self) -> dict:
         # Returns a dictionary with coordinates of body nodes as keys and the respective body nodes as values.
@@ -293,7 +302,6 @@ class Snek(tk.Toplevel):
                 self.move()
                 grid = ImageTk.PhotoImage(self.repr())
                 self.game_label.configure(image=grid)
-                self.game_label.image = grid
                 self.high_score_label.grid_forget()
                 self.won_label = ttk.Label(
                     self, text="YOU WIN!", style="Won.Text.TLabel"
@@ -321,11 +329,8 @@ class Snek(tk.Toplevel):
             # If the user had a highscore then the label is forgotten, if they did not, have a highscore, nothing is done.
             try:
                 self.high_score_label.grid_forget()
-            except Exception as Err:
-                if isinstance(Err, AttributeError):
-                    pass
-                else:
-                    raise Err
+            except AttributeError:
+                pass
 
             self.lost_label = ttk.Label(
                 self, text="Game Over!", style="Lost.Text.TLabel"
@@ -339,7 +344,6 @@ class Snek(tk.Toplevel):
         else:
             grid = ImageTk.PhotoImage(self.repr())
             self.game_label.configure(image=grid)
-            self.game_label.image = grid
             self.after(self.__delay, self.update)
 
     def update_highscore(self) -> None:
@@ -392,7 +396,7 @@ def main() -> None:
             username_screen, text="Username", style="Entry.TLabel"
         )
         username_text = tk.StringVar(username_screen)
-        username_text.trace("w", lambda *args: validate_username())
+        username_text.trace_add("write", lambda *args: validate_username())
         username_entry = ttk.Entry(username_screen, textvariable=username_text)
         username_submit_button = ttk.Button(
             username_screen,
@@ -492,11 +496,11 @@ def main() -> None:
     root = tk.Tk()
     root.title("Snek")
     root.config(bg="black")
-    root.resizable(0, 0)
+    root.resizable(False, False)
 
     # Loading and setting up the snek icon.
     logo = Image.open(f"{current}/Assets/snek.png")
-    logo.thumbnail((x // 4 for x in logo.size))
+    logo.thumbnail((logo.size[0] // 4, logo.size[0] // 4))
     logo = ImageTk.PhotoImage(logo)
     root.iconbitmap(f"{current}/Assets/snek.ico")
 
