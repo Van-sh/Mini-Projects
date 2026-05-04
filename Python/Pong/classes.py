@@ -4,7 +4,16 @@ import pygame
 
 
 class Player:
-    def __init__(self, x: int, COLOUR: tuple, WIN_HEIGHT: int) -> None:
+    SIZE: tuple[int, int]
+    WIDTH: int
+    HEIGHT: int
+    drag: float
+    pos: pygame.math.Vector2
+    dy: float
+    surface: pygame.Surface
+    score: int
+
+    def __init__(self, x: float, COLOUR: tuple, WIN_HEIGHT: int) -> None:
         self.SIZE = self.WIDTH, self.HEIGHT = 10, 80
         self.drag = 0
         self.pos = pygame.math.Vector2(x, (WIN_HEIGHT - self.HEIGHT) // 2)
@@ -26,6 +35,14 @@ class Player:
 
 
 class Ball:
+    SIZE: tuple[int, int]
+    WIDTH: int
+    HEIGHT: int
+    pos: pygame.math.Vector2
+    dx: float
+    dy: float
+    surface: pygame.Surface
+
     def __init__(self, COLOUR: tuple, WIN_WIDTH: int, WIN_HEIGHT: int) -> None:
         self.SIZE = self.WIDTH, self.HEIGHT = 10, 10
         self.pos = pygame.math.Vector2(
@@ -76,13 +93,23 @@ class Ball:
 
 
 class Button:
+    SIZE: tuple[int, int]
+    WIDTH: int
+    HEIGHT: int
+    pos: pygame.math.Vector2
+    BG_COLOUR: tuple[int, int, int]
+    FG_COLOUR: tuple[int, int, int]
+    FONT: pygame.font.Font
+    surface: pygame.Surface
+    _secondary_surface: pygame.Surface
+
     def __init__(
         self,
         x: int,
         y: int,
         text: str,
-        BG_COLOUR: tuple,
-        FG_COLOUR: tuple,
+        BG_COLOUR: tuple[int, int, int],
+        FG_COLOUR: tuple[int, int, int],
         FONT: pygame.font.Font,
     ) -> None:
         self.SIZE = self.WIDTH, self.HEIGHT = 400, 75

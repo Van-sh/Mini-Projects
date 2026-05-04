@@ -4,7 +4,6 @@ import sys
 
 import pygame
 
-# Importing classes.
 from classes import Ball, Button, Player
 
 # Initialising pygame.

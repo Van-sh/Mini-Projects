@@ -1,5 +1,6 @@
-from random import choice
 import os
+import subprocess
+from random import choice
 
 
 class Hangman:
@@ -21,14 +22,14 @@ class Hangman:
         repr = self.text_art[self.__wrong_guesses]
         if self.__wrong_guesses < 6:
             repr += f"""\n\nWord -> {self.get_word_print()}
-Guessed Letters -> {', '.join(sorted(self.__guesses))}"""
+Guessed Letters -> {", ".join(sorted(self.__guesses))}"""
         return repr
 
     def __clear(self) -> None:
         if os.name == "nt":
-            os.system("cls")
+            subprocess.run(["cls"])
         else:
-            os.system("clear")
+            subprocess.run(["clear"])
 
     def new_word(self) -> None:
         with open(f"{os.path.dirname(os.path.realpath(__file__))}/words.txt", "r") as f:

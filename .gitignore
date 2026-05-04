@@ -1,5 +1,8 @@
 *.exe
 *.out
 
+__pycache__
+*.db
+
 # Compiled file.
 *main

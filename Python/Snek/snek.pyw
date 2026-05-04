@@ -1,23 +1,35 @@
 # Please don't roast my code ;-;
-import os
 import random
 import sqlite3
 import tkinter as tk
 from collections import deque
+from pathlib import Path
 from threading import Thread
 from tkinter import ttk
+from typing import Literal, Optional
 
 from PIL import Image, ImageTk
+from PIL.ImageFile import ImageFile
 
 import createdatabase
 
-current = os.path.dirname(os.path.realpath(__file__))
+type Direction = Literal["N", "S", "E", "W"]
+type Controls = Literal["W", "A", "S", "D"]
+
+DB = Path("Database/snekscores.db")
+
+ASSETS = Path("Assets").absolute()
+MODULES = ASSETS / "Modules"
 
 # creating the database and table if not present.
-createdatabase.main()
+createdatabase.setup(DB)
 
 
 class BodyNode:
+    x: int
+    y: int
+    __repr: str
+
     def __init__(self, x: int, y: int) -> None:
         self.__repr = "[]"
         self.x = x
@@ -28,6 +40,8 @@ class BodyNode:
 
 
 class Head(BodyNode):
+    direction: Direction
+
     def __init__(self, x: int, y: int) -> None:
         super().__init__(x, y)
         self.__repr = "()"
@@ -35,30 +49,34 @@ class Head(BodyNode):
 
     def move(self) -> None:
         # Move the head based on direction.
-        if self.direction == "N":
-            self.y -= 1
-        elif self.direction == "S":
-            self.y += 1
-        elif self.direction == "E":
-            self.x += 1
-        elif self.direction == "W":
-            self.x -= 1
+        match self.direction:
+            case "N":
+                self.y -= 1
+            case "S":
+                self.y += 1
+            case "E":
+                self.x += 1
+            case "W":
+                self.x -= 1
 
     def checkmove(self) -> tuple[int, int]:
         # Check where the head will be based on direction.
-        if self.direction == "N":
-            return (self.x, self.y - 1)
-        elif self.direction == "S":
-            return (self.x, self.y + 1)
-        elif self.direction == "E":
-            return (self.x + 1, self.y)
-        elif self.direction == "W":
-            return (self.x - 1, self.y)
-        else:
-            return (self.x, self.y)
+        match self.direction:
+            case "N":
+                return (self.x, self.y - 1)
+            case "S":
+                return (self.x, self.y + 1)
+            case "E":
+                return (self.x + 1, self.y)
+            case "W":
+                return (self.x - 1, self.y)
 
 
 class Fud:
+    x: int
+    y: int
+    __repr: str
+
     def __init__(self, gridx: int, gridy: int, black_list_coords: tuple) -> None:
         self.__repr = "<>"
         while True:
@@ -81,6 +99,37 @@ class Fud:
 
 
 class Snek(tk.Toplevel):
+    ASSET_WIDTH: int
+    ASSET_HEIGHT: int
+    root: tk.Tk
+    username: str
+    score: int
+    sizex: int
+    sizey: int
+    fud_count: int
+    cnx: sqlite3.Connection
+    csr: sqlite3.Cursor
+    data: Optional[tuple[int, str, int]]
+    score_text: tk.StringVar
+    score_label: ttk.Label
+    game_label: ttk.Label
+    game_close_button: ttk.Button
+
+    _head: ImageFile
+    _body: ImageFile
+    _fud: ImageFile
+    _grass: ImageFile
+
+    __delay: int
+    __style: ttk.Style
+    __grid: ImageTk.PhotoImage
+    __head: Head
+    __snake: list[BodyNode]
+    __fud: list[Fud]
+    __controls_to_directions: dict[Controls, Direction]
+    __black_list_directions: dict[Direction, Direction]
+    __move_queue: deque[Direction]
+
     def __init__(
         self,
         root: tk.Tk,
@@ -94,7 +143,7 @@ class Snek(tk.Toplevel):
         # Initialising TopLevel.
         self.resizable(False, False)
         self.title(f"Snek - {username}")
-        self.iconbitmap(f"{current}/Assets/snek.ico")
+        self.iconphoto(True, tk.PhotoImage(str(ASSETS / "snek.png")))
 
         # Configuring style for widgets.
         self.__style = ttk.Style(self)
@@ -106,10 +155,10 @@ class Snek(tk.Toplevel):
             "Won.Text.TLabel", font=("Arial", 15, "bold"), foreground="#00ff00"
         )
 
-        self._head = Image.open(f"{current}/Assets/Modules/snek_head.png")
-        self._body = Image.open(f"{current}/Assets/Modules/snek_body.png")
-        self._fud = Image.open(f"{current}/Assets/Modules/apple.png")
-        self._grass = Image.open(f"{current}/Assets/Modules/back_drop.png")
+        self._head = Image.open(MODULES / "snek_head.png")
+        self._body = Image.open(MODULES / "snek_body.png")
+        self._fud = Image.open(MODULES / "apple.png")
+        self._grass = Image.open(MODULES / "back_drop.png")
         self.ASSET_WIDTH = self._head.width
         self.ASSET_HEIGHT = self._head.height
         self.sizex = sizex
@@ -146,13 +195,14 @@ class Snek(tk.Toplevel):
         self.score = 0
 
         # Starting a SQL connection.
-        self.cnx = sqlite3.connect(f"{current}/Database/snekscores.db")
+        self.cnx = sqlite3.connect(DB)
         self.csr = self.cnx.cursor()
         self.csr.execute("SELECT * FROM snekscores WHERE Username = ?;", (username,))
-        self.data = self.csr.fetchall()
+        data: list[tuple[int, str, int]] = self.csr.fetchall()
+        self.data = None
         # Display highscore if user has one.
-        if len(self.data) > 0:
-            self.data = self.data[0]
+        if len(data) > 0:
+            self.data = data[0]
             self.high_score_label = ttk.Label(
                 self, text=f"Your High Score: {self.data[2]}", style="Text.TLabel"
             )
@@ -166,8 +216,8 @@ class Snek(tk.Toplevel):
         )
         self.score_label.grid(column=0, row=1)
         # Display the game grid.
-        grid = ImageTk.PhotoImage(self.repr())
-        self.game_label = ttk.Label(self, image=grid)
+        self.__grid = ImageTk.PhotoImage(self.repr())
+        self.game_label = ttk.Label(self, image=self.__grid)
         self.game_close_button = ttk.Button(
             self, text="Close", width=35, command=self.destroy
         )
@@ -260,7 +310,7 @@ class Snek(tk.Toplevel):
         # Updates the location of the head based on it's direction.
         self.__head.move()
 
-    def add_move(self, direction: str) -> None:
+    def add_move(self, direction: Direction) -> None:
         # Add Move in the move queue.
         if len(self.__move_queue) == 0:
             if direction != self.__black_list_directions[self.__head.direction]:
@@ -300,8 +350,8 @@ class Snek(tk.Toplevel):
             # Stops the game if the grid fills up so that the replace method for fud does not end up in an infinite loop.
             if self.score == self.sizex * self.sizey - 2 - len(self.__fud):
                 self.move()
-                grid = ImageTk.PhotoImage(self.repr())
-                self.game_label.configure(image=grid)
+                self.__grid = ImageTk.PhotoImage(self.repr())
+                self.game_label.configure(image=self.__grid)
                 self.high_score_label.grid_forget()
                 self.won_label = ttk.Label(
                     self, text="YOU WIN!", style="Won.Text.TLabel"
@@ -342,13 +392,14 @@ class Snek(tk.Toplevel):
             return
         # If the game is not over, updates the display and schedules the next frame.
         else:
-            grid = ImageTk.PhotoImage(self.repr())
-            self.game_label.configure(image=grid)
+            self.__grid = ImageTk.PhotoImage(self.repr())
+            self.game_label.configure(image=self.__grid)
             self.after(self.__delay, self.update)
 
     def update_highscore(self) -> None:
         # If user does not have a highscore, highscore is inserted.
-        if len(self.data) == 0:
+        print(self.data)
+        if self.data is None:
             self.csr.execute(
                 "INSERT INTO snekscores(Username, highScore) VALUES(?, ?);",
                 (self.username, self.score),
@@ -389,14 +440,14 @@ def main() -> None:
         # Initialising TopLevel.
         username_screen = tk.Toplevel(root, background="black")
         username_screen.title("Snek - Play")
-        username_screen.iconbitmap(f"{current}/Assets/snek.ico")
+        username_screen.iconphoto(True, tk.PhotoImage(str(ASSETS / "snek.png")))
 
         # Setting up TopLevel.
         username_label = ttk.Label(
             username_screen, text="Username", style="Entry.TLabel"
         )
         username_text = tk.StringVar(username_screen)
-        username_text.trace_add("write", lambda *args: validate_username())
+        username_text.trace_add("write", lambda *_: validate_username())
         username_entry = ttk.Entry(username_screen, textvariable=username_text)
         username_submit_button = ttk.Button(
             username_screen,
@@ -419,7 +470,7 @@ def main() -> None:
         # Initialising TopLevel.
         leaderboard_screen = tk.Toplevel(root, background="black")
         leaderboard_screen.title("Snek - Leaderboard")
-        leaderboard_screen.iconbitmap(f"{current}/Assets/snek.ico")
+        leaderboard_screen.iconphoto(True, tk.PhotoImage(str(ASSETS / "snek.png")))
 
         # Setting up TopLevel.
         leaderboard_heading_label = ttk.Label(
@@ -459,7 +510,7 @@ def main() -> None:
         # Initialising TopLevel.
         rules_screen = tk.Toplevel(root, background="black")
         rules_screen.title("Snek - Rules")
-        rules_screen.iconbitmap(f"{current}/Assets/snek.ico")
+        rules_screen.iconphoto(True, tk.PhotoImage(str(ASSETS / "snek.png")))
 
         # Setting up TopLevel.
         controls_heading_label = ttk.Label(
@@ -499,11 +550,10 @@ def main() -> None:
     root.resizable(False, False)
 
     # Loading and setting up the snek icon.
-    logo = Image.open(f"{current}/Assets/snek.png")
+    logo = Image.open(ASSETS / "snek.png")
     logo.thumbnail((logo.size[0] // 4, logo.size[0] // 4))
     logo = ImageTk.PhotoImage(logo)
-    root.iconbitmap(f"{current}/Assets/snek.ico")
-
+    root.iconphoto(True, tk.PhotoImage(str(ASSETS / "snek.png")))
     # Configuring style for widgets.
     style = ttk.Style(root)
     style.theme_use("alt")
@@ -537,7 +587,7 @@ def main() -> None:
 if __name__ == "__main__":
     # Initialising a global variable to keep track of the last username, empty string on startup
     last_user = ""
-    cnx = sqlite3.connect(f"{current}/Database/snekscores.db")
+    cnx = sqlite3.connect(DB)
     csr = cnx.cursor()
     main()
     cnx.close()
